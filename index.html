@@ -1946,6 +1946,17 @@ document.getElementById('navSecureBtn').addEventListener('click', () => {
 });
 </script>
 
+<!-- ═══ LOGIN TRANSITION OVERLAY ═══ -->
+<div id="loginTransition">
+  <canvas id="ltCanvas"></canvas>
+  <div id="ltInner">
+    <div id="ltLogo">&#x2B21; BLACK SENTINEL</div>
+    <div id="ltText">AUTHENTICATING...</div>
+    <div id="ltBarWrap"><div id="ltBar"></div></div>
+    <div id="ltSub">SECURE CHANNEL — AES-256-GCM</div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════
      LOGIN OVERLAY
 ════════════════════════════════════════ -->
@@ -2044,8 +2055,8 @@ document.getElementById('navSecureBtn').addEventListener('click', () => {
     <!-- Sidebar + content -->
     <div class="ap-body">
       <div class="ap-sidebar">
-        <div class="ap-nav-item active">⬛ Dashboard</div>
-        <div class="ap-nav-item">◈ Threat Intel</div>
+        <div class="ap-nav-item active" data-panel="dashboardContent">⬛ Dashboard</div>
+        <div class="ap-nav-item" data-panel="threatIntelContent">◈ Threat Intel</div>
         <div class="ap-nav-item">⬡ Network Map</div>
         <div class="ap-nav-item">✉ Email Fortress</div>
         <div class="ap-nav-item">⚙ Configuration</div>
@@ -2160,6 +2171,96 @@ document.getElementById('navSecureBtn').addEventListener('click', () => {
 
         </div><!-- end dash-scroll -->
       </div>
+
+      <!-- ═══ THREAT INTEL PANEL ═══ -->
+      <div class="ap-content ti-panel" id="threatIntelContent" style="display:none;">
+        <canvas id="tiBgCanvas" style="position:absolute;inset:0;pointer-events:none;z-index:0;"></canvas>
+        <div class="dash-scroll">
+
+          <div class="ti-header">
+            <div>
+              <div class="dash-section-label" style="margin-top:24px;">// THREAT INTELLIGENCE CENTRE</div>
+              <div class="ti-subtitle">Real-time adversary tracking &amp; IOC analysis</div>
+            </div>
+            <div class="ti-header-stats">
+              <div class="ti-hstat"><div class="ti-hstat-val" id="tiTotalFeeds">0</div><div class="ti-hstat-label">FEEDS ACTIVE</div></div>
+              <div class="ti-hstat"><div class="ti-hstat-val red" id="tiCritical">0</div><div class="ti-hstat-label">CRITICAL</div></div>
+              <div class="ti-hstat"><div class="ti-hstat-val gold" id="tiIOCs">0</div><div class="ti-hstat-label">IOCs TODAY</div></div>
+            </div>
+          </div>
+
+          <!-- SECTION 1: THREAT FEED -->
+          <div class="dash-section-label">// 01 — LIVE THREAT FEED</div>
+          <div class="ti-feed-grid">
+            <div class="ti-feed-col">
+              <div class="ti-col-label"><span class="ti-dot red"></span>MALWARE &amp; RANSOMWARE</div>
+              <div class="ti-feed-list" id="tiFeedMalware"></div>
+            </div>
+            <div class="ti-feed-col">
+              <div class="ti-col-label"><span class="ti-dot gold"></span>CVEs</div>
+              <div class="ti-feed-list" id="tiFeedCVE"></div>
+            </div>
+            <div class="ti-feed-col">
+              <div class="ti-col-label"><span class="ti-dot cyan"></span>PHISHING CAMPAIGNS</div>
+              <div class="ti-feed-list" id="tiFeedPhish"></div>
+            </div>
+          </div>
+
+          <!-- SECTION 2: THREAT ANALYSIS -->
+          <div class="dash-section-label">// 02 — THREAT ANALYSIS</div>
+          <div class="ti-analysis-grid">
+            <div class="dash-widget ti-cat-widget">
+              <div class="dw-label">THREAT CATEGORISATION</div>
+              <canvas id="tiCatCanvas"></canvas>
+            </div>
+            <div class="dash-widget">
+              <div class="dw-label">SEVERITY SCORING</div>
+              <div class="ti-sev-list" id="tiSevList"></div>
+            </div>
+            <div class="dash-widget">
+              <div class="dw-label">AFFECTED INDUSTRIES</div>
+              <div class="ti-industry-list" id="tiIndustryList"></div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: IOCs -->
+          <div class="dash-section-label">// 03 — INDICATORS OF COMPROMISE</div>
+          <div class="ti-ioc-grid">
+            <div class="dash-widget ti-ioc-widget">
+              <div class="dw-label"><span class="ti-dot red"></span>MALICIOUS IPs</div>
+              <div class="ti-ioc-list" id="tiIocIPs"></div>
+            </div>
+            <div class="dash-widget ti-ioc-widget">
+              <div class="dw-label"><span class="ti-dot gold"></span>MALICIOUS DOMAINS</div>
+              <div class="ti-ioc-list" id="tiIocDomains"></div>
+            </div>
+            <div class="dash-widget ti-ioc-widget">
+              <div class="dw-label"><span class="ti-dot cyan"></span>FILE HASHES</div>
+              <div class="ti-ioc-list" id="tiIocHashes"></div>
+            </div>
+            <div class="dash-widget ti-ioc-widget">
+              <div class="dw-label"><span class="ti-dot purple"></span>MALICIOUS URLs</div>
+              <div class="ti-ioc-list" id="tiIocURLs"></div>
+            </div>
+          </div>
+
+          <!-- SECTION 4: ATTRIBUTION -->
+          <div class="dash-section-label">// 04 — ATTRIBUTION</div>
+          <div class="ti-attr-grid">
+            <div class="dash-widget ti-attr-widget">
+              <div class="dw-label">SUSPECTED THREAT GROUPS</div>
+              <div class="ti-group-list" id="tiGroups"></div>
+            </div>
+            <div class="dash-widget ti-attr-widget">
+              <div class="dw-label">REGION-BASED ORIGINS</div>
+              <canvas id="tiRegionCanvas"></canvas>
+              <div class="ti-region-list" id="tiRegionList"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
     <!-- Bottom status bar -->
@@ -2671,6 +2772,182 @@ document.getElementById('navSecureBtn').addEventListener('click', () => {
   color:rgba(192,21,42,.8); min-height:18px; opacity:0;
   border-left:2px solid rgba(192,21,42,.3); padding-left:8px;
 }
+
+/* ═══════════════════════════════════════
+   LOGIN TRANSITION OVERLAY
+════════════════════════════════════════ */
+#loginTransition {
+  position:fixed; inset:0; z-index:10002;
+  display:none; align-items:center; justify-content:center;
+  background:#060003;
+  overflow:hidden;
+}
+#loginTransition.active { display:flex; }
+#loginTransition.flash { animation:ltFlash .15s ease; }
+#loginTransition.wipe { animation:ltWipe .7s cubic-bezier(.7,0,1,1) forwards; }
+@keyframes ltFlash { 0%,100%{filter:brightness(1)} 50%{filter:brightness(3)} }
+@keyframes ltWipe  { 0%{clip-path:inset(0 0 0 0)} 100%{clip-path:inset(0 0 100% 0)} }
+
+#ltCanvas { position:absolute; inset:0; }
+#ltInner {
+  position:relative; z-index:2;
+  text-align:center; display:flex; flex-direction:column; align-items:center; gap:18px;
+}
+#ltLogo {
+  font-family:var(--mono); font-size:1.1rem; letter-spacing:.4em;
+  color:var(--cr2);
+  text-shadow:0 0 30px rgba(192,21,42,.9), 0 0 60px rgba(192,21,42,.4);
+  animation:ltLogoPulse 1s ease-in-out infinite;
+}
+@keyframes ltLogoPulse { 0%,100%{text-shadow:0 0 20px rgba(192,21,42,.7)} 50%{text-shadow:0 0 50px rgba(192,21,42,1),0 0 100px rgba(192,21,42,.4)} }
+#ltText {
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.3em;
+  color:rgba(255,255,255,.7); min-width:360px; text-align:center;
+}
+#ltBarWrap {
+  width:360px; height:2px; background:rgba(192,21,42,.15);
+  position:relative; overflow:hidden;
+}
+#ltBarWrap::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(192,21,42,.4),transparent);
+  animation:ltShimmer 1.5s linear infinite;
+}
+@keyframes ltShimmer { from{transform:translateX(-100%)} to{transform:translateX(100%)} }
+#ltBar {
+  height:100%; width:0%; background:var(--cr2);
+  box-shadow:0 0 12px rgba(192,21,42,.8);
+  transition:width .3s cubic-bezier(.16,1,.3,1);
+}
+#ltSub {
+  font-family:var(--mono); font-size:.5rem; letter-spacing:.3em;
+  color:rgba(192,21,42,.4);
+}
+
+/* ═══════════════════════════════════════
+   THREAT INTEL PANEL STYLES
+════════════════════════════════════════ */
+@keyframes panelSlideIn { from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:none} }
+
+.ti-panel { position:relative; overflow:hidden; }
+
+.ti-header {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  padding:0 0 16px; border-bottom:1px solid rgba(192,21,42,.12);
+  margin-bottom:4px;
+}
+.ti-subtitle {
+  font-family:var(--mono); font-size:.55rem; letter-spacing:.2em;
+  color:rgba(255,255,255,.25); margin-top:6px;
+}
+.ti-header-stats { display:flex; gap:24px; align-items:center; }
+.ti-hstat { text-align:center; }
+.ti-hstat-val { font-size:1.8rem; font-weight:300; color:var(--crf); line-height:1; }
+.ti-hstat-val.red  { color:var(--cr2); text-shadow:0 0 16px rgba(192,21,42,.5); }
+.ti-hstat-val.gold { color:var(--gold); text-shadow:0 0 16px rgba(201,168,76,.4); }
+.ti-hstat-label { font-family:var(--mono); font-size:.45rem; letter-spacing:.22em; color:rgba(255,255,255,.25); margin-top:3px; }
+
+/* Feed grid */
+.ti-feed-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-bottom:2px; }
+.ti-feed-col {
+  background:rgba(10,2,6,.75); border:1px solid rgba(192,21,42,.1);
+  padding:14px 16px; position:relative; overflow:hidden;
+}
+.ti-feed-col::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,rgba(192,21,42,.4),transparent); }
+.ti-col-label {
+  font-family:var(--mono); font-size:.5rem; letter-spacing:.22em;
+  color:rgba(255,255,255,.3); margin-bottom:10px;
+  display:flex; align-items:center; gap:7px;
+}
+.ti-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.ti-dot.red    { background:var(--cr2); box-shadow:0 0 6px rgba(192,21,42,.7); animation:crPulse 1.5s infinite; }
+.ti-dot.gold   { background:var(--gold); box-shadow:0 0 6px rgba(201,168,76,.5); }
+.ti-dot.cyan   { background:rgba(0,200,255,.9); box-shadow:0 0 6px rgba(0,200,255,.5); }
+.ti-dot.purple { background:rgba(180,80,200,.9); box-shadow:0 0 6px rgba(180,80,200,.5); }
+.ti-feed-list { display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(192,21,42,.2) transparent; }
+.ti-feed-list::-webkit-scrollbar { width:3px; }
+.ti-feed-list::-webkit-scrollbar-thumb { background:rgba(192,21,42,.2); }
+
+.ti-feed-item {
+  padding:9px 12px; background:rgba(192,21,42,.04);
+  border:1px solid rgba(192,21,42,.1); border-left:2px solid rgba(192,21,42,.4);
+  transition:border-color .2s, background .2s;
+}
+.ti-feed-item:hover { background:rgba(192,21,42,.08); border-color:rgba(192,21,42,.3); }
+.ti-fi-top { display:flex; align-items:center; gap:8px; margin-bottom:5px; flex-wrap:wrap; }
+.ti-fi-tag { font-family:var(--mono); font-size:.44rem; letter-spacing:.15em; padding:2px 7px; border:1px solid; border-radius:0; }
+.ti-fi-sev { font-family:var(--mono); font-size:.46rem; letter-spacing:.1em; font-weight:bold; }
+.ti-fi-time { font-family:var(--mono); font-size:.44rem; color:rgba(255,255,255,.25); margin-left:auto; }
+.ti-fi-name { font-family:var(--serif); font-size:.88rem; color:rgba(255,255,255,.7); margin-bottom:3px; }
+.ti-fi-detail { font-family:var(--mono); font-size:.48rem; color:rgba(255,255,255,.3); line-height:1.5; letter-spacing:.05em; }
+
+/* Analysis grid */
+.ti-analysis-grid { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:2px; margin-bottom:2px; }
+.ti-cat-widget { min-height:200px; }
+#tiCatCanvas { display:block; width:100%; }
+
+.ti-sev-list { display:flex; flex-direction:column; gap:9px; }
+.ti-sev-row { display:grid; grid-template-columns:1fr auto 32px; align-items:center; gap:8px; }
+.ti-sev-name { font-family:var(--mono); font-size:.5rem; color:rgba(255,255,255,.45); }
+.ti-sev-bar-wrap { height:4px; background:rgba(255,255,255,.05); border-radius:2px; overflow:hidden; }
+.ti-sev-bar { height:100%; border-radius:2px; }
+.ti-sev-score { font-family:var(--mono); font-size:.58rem; font-weight:bold; text-align:right; }
+
+.ti-ind-row { display:grid; grid-template-columns:10px 1fr auto 30px; align-items:center; gap:8px; margin-bottom:7px; }
+.ti-ind-dot { width:8px; height:8px; border-radius:50%; }
+.ti-ind-name { font-family:var(--mono); font-size:.5rem; color:rgba(255,255,255,.4); }
+.ti-ind-bar-wrap { width:70px; height:3px; background:rgba(255,255,255,.05); border-radius:2px; overflow:hidden; }
+.ti-ind-bar { height:100%; border-radius:2px; }
+.ti-ind-pct { font-family:var(--mono); font-size:.5rem; font-weight:bold; text-align:right; }
+
+/* IOC grid */
+.ti-ioc-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-bottom:2px; }
+.ti-ioc-widget { min-height:180px; }
+.ti-ioc-list { display:flex; flex-direction:column; gap:4px; max-height:170px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(192,21,42,.15) transparent; }
+.ti-ioc-list::-webkit-scrollbar { width:3px; }
+.ti-ioc-list::-webkit-scrollbar-thumb { background:rgba(192,21,42,.2); }
+
+.ioc-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:5px 8px; background:rgba(192,21,42,.03);
+  border:1px solid rgba(192,21,42,.08); border-left:1px solid rgba(192,21,42,.3);
+  gap:6px;
+}
+.ioc-row:hover { background:rgba(192,21,42,.07); }
+.ioc-val { font-family:var(--mono); font-size:.5rem; color:rgba(255,255,255,.55); flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.ioc-val.url { color:rgba(255,80,50,.7); }
+.ioc-hash { font-family:var(--mono); font-size:.46rem; color:rgba(0,200,255,.5); flex:1; }
+.ioc-type { font-family:var(--mono); font-size:.42rem; color:rgba(192,21,42,.7); background:rgba(192,21,42,.1); padding:1px 5px; margin-right:5px; }
+.ioc-name { font-family:var(--mono); font-size:.48rem; color:rgba(255,255,255,.4); }
+.ioc-copy { font-size:.7rem; color:rgba(192,21,42,.4); cursor:pointer; flex-shrink:0; transition:color .2s; padding:0 3px; }
+.ioc-copy:hover { color:var(--cr2); }
+.hash-row { flex-direction:column; align-items:flex-start; }
+.hash-row > div { display:flex; align-items:center; width:100%; }
+
+/* Attribution */
+.ti-attr-grid { display:grid; grid-template-columns:1.6fr 1fr; gap:2px; margin-bottom:2px; }
+.ti-attr-widget { }
+.ti-group-list { display:flex; flex-direction:column; gap:6px; max-height:320px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(192,21,42,.2) transparent; }
+.ti-group-list::-webkit-scrollbar { width:3px; }
+
+.ti-group-row {
+  border:1px solid rgba(192,21,42,.12); border-left:2px solid rgba(192,21,42,.4);
+  padding:12px 14px; background:rgba(192,21,42,.04);
+  transition:background .2s, border-color .2s;
+}
+.ti-group-row:hover { background:rgba(192,21,42,.08); }
+.ti-grp-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.ti-grp-left { display:flex; align-items:center; gap:10px; }
+.ti-grp-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.ti-grp-name { font-family:var(--serif); font-size:.95rem; color:rgba(255,255,255,.8); margin-bottom:2px; }
+.ti-grp-origin { font-family:var(--mono); font-size:.48rem; color:rgba(255,255,255,.3); letter-spacing:.1em; }
+.ti-grp-act { font-family:var(--mono); font-size:.48rem; letter-spacing:.15em; padding:3px 9px; border:1px solid; }
+.ti-grp-body { display:flex; gap:16px; }
+.ti-grp-targets, .ti-grp-camps { font-family:var(--mono); font-size:.48rem; color:rgba(255,255,255,.35); line-height:1.6; }
+.ti-grp-lbl { color:rgba(192,21,42,.6); margin-right:5px; }
+
+#tiRegionCanvas { display:block; width:100%; margin:8px 0; }
+.ti-region-list { display:flex; flex-direction:column; gap:4px; }
 </style>
 
 <script>
@@ -2974,7 +3251,6 @@ function attemptLogin(){
   const pass=document.getElementById('loginPass').value.trim();
   const err=document.getElementById('loginError');
   const btn=document.getElementById('loginBtn');
-
   if(user==='batman@benjaminverster.co.za' && pass==='987654321'){
     err.classList.remove('show');
     btn.classList.add('loading');
@@ -2982,8 +3258,10 @@ function attemptLogin(){
       btn.classList.remove('loading');
       document.getElementById('loginOverlay').classList.remove('active');
       document.getElementById('apUserName').textContent='BATMAN';
-      document.getElementById('adminOverlay').classList.add('active');
-      startAdminBg();
+      fireLoginTransition(()=>{
+        document.getElementById('adminOverlay').classList.add('active');
+        startAdminBg();
+      });
     },1200);
   } else {
     err.classList.remove('show');
@@ -2993,9 +3271,55 @@ function attemptLogin(){
   }
 }
 
-document.getElementById('loginBtn').addEventListener('click', attemptLogin);
-document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') attemptLogin(); });
-document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+// ─────────────────────────────────────────
+// CINEMATIC LOGIN TRANSITION
+// ─────────────────────────────────────────
+function fireLoginTransition(cb){
+  const ov=document.getElementById('loginTransition');
+  const txt=document.getElementById('ltText');
+  const bar=document.getElementById('ltBar');
+  const c=document.getElementById('ltCanvas');
+  c.width=window.innerWidth; c.height=window.innerHeight;
+  const ctx=c.getContext('2d');
+  const chars='01ABCDEFアイウ0123456789/*!#$%'.split('');
+  const cols=Math.floor(c.width/14),drops=Array(cols).fill(1);
+  let rainRunning=true;
+  function drawRain(){
+    if(!rainRunning)return;
+    ctx.fillStyle='rgba(4,0,2,.08)';ctx.fillRect(0,0,c.width,c.height);
+    ctx.font='12px monospace';
+    drops.forEach((y,i)=>{
+      const ch=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillStyle=i%4===0?'rgba(192,21,42,.9)':i%3===0?'rgba(255,255,255,.15)':'rgba(139,0,0,.4)';
+      ctx.fillText(ch,i*14,y*14);
+      if(y*14>c.height&&Math.random()>.97)drops[i]=0;
+      drops[i]++;
+    });
+    requestAnimationFrame(drawRain);
+  }
+  drawRain();
+  ov.classList.add('active');
+  const lines=['AUTHENTICATING CREDENTIALS...','IDENTITY VERIFIED — BATMAN','LOADING CLASSIFIED MODULES...','ESTABLISHING SECURE TUNNEL...','DECRYPTING CLEARANCE KEYS...','ACCESS GRANTED — TS/SCI','INITIALISING BLACK SENTINEL CONSOLE...'];
+  let li=0;
+  function nextLine(){
+    if(li>=lines.length){done();return;}
+    txt.textContent=lines[li];
+    bar.style.width=((li+1)/lines.length*100)+'%';
+    li++;
+    setTimeout(nextLine,li===1?600:li===6?800:320);
+  }
+  nextLine();
+  function done(){
+    rainRunning=false;
+    ov.classList.add('flash');
+    setTimeout(()=>{ov.classList.add('wipe');},200);
+    setTimeout(()=>{ov.classList.remove('active','flash','wipe');ctx.clearRect(0,0,c.width,c.height);cb();},900);
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click',attemptLogin);
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')attemptLogin();});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus();});
 
 // ─────────────────────────────────────────
 // CLOSE / LOGOUT
@@ -3006,28 +3330,237 @@ document.getElementById('loginClose').addEventListener('click',()=>{
   document.getElementById('loginPass').value='';
   document.getElementById('loginError').classList.remove('show');
 });
-
 document.getElementById('adminLogout').addEventListener('click',()=>{
   document.getElementById('adminOverlay').classList.remove('active');
   document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
   document.getElementById('loginError').classList.remove('show');
 });
-
-// Close login on backdrop click
 document.getElementById('loginOverlay').addEventListener('click',e=>{
-  if(e.target===document.getElementById('loginOverlay')){
-    document.getElementById('loginClose').click();
-  }
+  if(e.target===document.getElementById('loginOverlay'))document.getElementById('loginClose').click();
 });
 
-// Sidebar nav highlight
+// ─────────────────────────────────────────
+// SIDEBAR NAV + PANEL SWITCHING
+// ─────────────────────────────────────────
+const allPanels=['dashboardContent','threatIntelContent'];
 document.querySelectorAll('.ap-nav-item').forEach(el=>{
   el.addEventListener('click',()=>{
     document.querySelectorAll('.ap-nav-item').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
+    const panel=el.dataset.panel;
+    if(panel){
+      allPanels.forEach(id=>{const p=document.getElementById(id);if(p)p.style.display='none';});
+      const target=document.getElementById(panel);
+      if(target){
+        target.style.display='flex';target.style.flexDirection='column';
+        target.style.animation='panelSlideIn .35s cubic-bezier(.16,1,.3,1) both';
+        if(panel==='threatIntelContent')initThreatIntel();
+      }
+    }
   });
 });
+
+// ─────────────────────────────────────────
+// THREAT INTEL INIT
+// ─────────────────────────────────────────
+let tiInitialised=false;
+function initThreatIntel(){
+  if(tiInitialised)return;
+  tiInitialised=true;
+  const overlay=document.getElementById('adminOverlay');
+
+  // BG hex grid
+  const bg=document.getElementById('tiBgCanvas');
+  const tiPanel=document.getElementById('threatIntelContent');
+  if(bg&&tiPanel){
+    bg.width=tiPanel.offsetWidth||1200;bg.height=tiPanel.offsetHeight||800;
+    const bctx=bg.getContext('2d');let bt=0;
+    function drawTIBg(){
+      if(!overlay.classList.contains('active'))return;
+      bctx.clearRect(0,0,bg.width,bg.height);
+      const HEX=56;
+      for(let x=0;x<bg.width;x+=HEX)for(let y=0;y<bg.height;y+=HEX){
+        const pulse=Math.sin(bt*.01+(x+y)*.005)*.5+.5;
+        bctx.strokeStyle=`rgba(192,21,42,${.02+pulse*.02})`;bctx.lineWidth=.5;
+        bctx.beginPath();for(let i=0;i<6;i++){const a=i/6*Math.PI*2;i===0?bctx.moveTo(x+Math.cos(a)*14,y+Math.sin(a)*14):bctx.lineTo(x+Math.cos(a)*14,y+Math.sin(a)*14);}
+        bctx.closePath();bctx.stroke();
+      }
+      bt++;requestAnimationFrame(drawTIBg);
+    }
+    drawTIBg();
+  }
+
+  // Header count-ups
+  function countUp(id,t,d){const el=document.getElementById(id);if(!el)return;let v=0;const inc=t/((d||1000)/16);const ti=setInterval(()=>{v=Math.min(v+inc,t);el.textContent=Math.floor(v).toLocaleString();if(v>=t)clearInterval(ti);},16);}
+  countUp('tiTotalFeeds',24,800);countUp('tiCritical',11,1000);countUp('tiIOCs',4382,1400);
+
+  // Feed data
+  const malwareFeeds=[
+    {name:'BlackCat/ALPHV Ransomware',tag:'RANSOMWARE',sev:'CRITICAL',time:'2m ago',detail:'New variant targeting healthcare — 47 orgs confirmed hit'},
+    {name:'LockBit 3.0 Campaign',tag:'RANSOMWARE',sev:'CRITICAL',time:'11m ago',detail:'Active campaign against financial institutions in EU/NA'},
+    {name:'IcedID Banking Trojan',tag:'TROJAN',sev:'HIGH',time:'34m ago',detail:'Phishing lures using fake invoice PDFs distributing IcedID'},
+    {name:'Cl0p Extortion Wave',tag:'EXTORTION',sev:'HIGH',time:'1h ago',detail:'MOVEit-style exploitation targeting MFT solutions'},
+    {name:'Emotet Botnet Resurgence',tag:'BOTNET',sev:'MEDIUM',time:'3h ago',detail:'Epoch 5 activity detected — macro-enabled Office docs'},
+  ];
+  const cveFeed=[
+    {id:'CVE-2025-21298',score:'9.8 CRITICAL',product:'Windows OLE',detail:'Remote code execution via crafted OLE object — patch available'},
+    {id:'CVE-2025-0282',score:'9.0 CRITICAL',product:'Ivanti Connect',detail:'Stack buffer overflow — exploit confirmed in wild'},
+    {id:'CVE-2024-55591',score:'9.6 CRITICAL',product:'Fortinet FortiOS',detail:'Auth bypass via crafted CSF proxy requests — patch immediately'},
+    {id:'CVE-2025-1094',score:'8.1 HIGH',product:'PostgreSQL',detail:'SQL injection via incorrect neutralisation in libpq'},
+    {id:'CVE-2024-49415',score:'7.5 HIGH',product:'Samsung Galaxy',detail:'RCE before authentication on multiple Galaxy devices'},
+  ];
+  const phishFeeds=[
+    {campaign:'Microsoft 365 Credential Harvest',target:'Enterprise users',volume:'12,400 emails',detail:'Fake MFA reset pages on compromised .edu domains'},
+    {campaign:'DHL Package Notification',target:'Retail consumers',volume:'89,200 emails',detail:'Malware dropper PDF — AgentTesla payload'},
+    {campaign:'DocuSign Executive Spear-Phish',target:'C-Suite / Finance',volume:'340 targeted',detail:'Highly targeted BEC — wire transfer fraud attempt'},
+    {campaign:'Fake LinkedIn InMail',target:'HR / Recruitment',volume:'5,800 emails',detail:'Malicious resume ZIP — Cobalt Strike stager'},
+  ];
+
+  function renderFeedItem(item,type){
+    const el=document.createElement('div');el.className='ti-feed-item';
+    el.style.opacity='0';el.style.transform='translateX(-8px)';
+    if(type==='malware'){
+      const sc=item.sev==='CRITICAL'?'192,21,42':'201,168,76';
+      el.innerHTML=`<div class="ti-fi-top"><span class="ti-fi-tag" style="background:rgba(${sc},.15);color:rgba(${sc},1);border-color:rgba(${sc},.3)">${item.tag}</span><span class="ti-fi-sev" style="color:rgba(${sc},1)">${item.sev}</span><span class="ti-fi-time">${item.time}</span></div><div class="ti-fi-name">${item.name}</div><div class="ti-fi-detail">${item.detail}</div>`;
+    }else if(type==='cve'){
+      const sc=item.score.includes('CRITICAL')||parseFloat(item.score)>=9?'192,21,42':parseFloat(item.score)>=8?'255,80,50':'201,168,76';
+      el.innerHTML=`<div class="ti-fi-top"><span class="ti-fi-tag" style="background:rgba(${sc},.15);color:rgba(${sc},1);border-color:rgba(${sc},.3)">${item.id}</span><span class="ti-fi-sev" style="color:rgba(${sc},1)">${item.score}</span></div><div class="ti-fi-name">${item.product}</div><div class="ti-fi-detail">${item.detail}</div>`;
+    }else{
+      el.innerHTML=`<div class="ti-fi-top"><span class="ti-fi-tag" style="background:rgba(0,200,255,.1);color:rgba(0,200,255,.9);border-color:rgba(0,200,255,.25)">PHISHING</span><span class="ti-fi-time">${item.volume}</span></div><div class="ti-fi-name">${item.campaign}</div><div class="ti-fi-detail">Target: ${item.target} — ${item.detail}</div>`;
+    }
+    return el;
+  }
+
+  function populateFeed(id,data,type){
+    const el=document.getElementById(id);if(!el)return;
+    data.forEach((item,i)=>{const row=renderFeedItem(item,type);el.appendChild(row);setTimeout(()=>{row.style.transition='opacity .4s,transform .4s';row.style.opacity='1';row.style.transform='none';},i*120+200);});
+  }
+  populateFeed('tiFeedMalware',malwareFeeds,'malware');
+  populateFeed('tiFeedCVE',cveFeed,'cve');
+  populateFeed('tiFeedPhish',phishFeeds,'phish');
+
+  // Live CVE ticker
+  const liveCVEs=[
+    {id:'CVE-2025-29824',score:'8.8 HIGH',product:'Windows CLFS',detail:'Zero-day privilege escalation — exploit circulating on dark web'},
+    {id:'CVE-2025-31200',score:'7.5 HIGH',product:'Apple CoreAudio',detail:'Memory corruption via maliciously crafted audio stream'},
+  ];
+  let lci=0;
+  setInterval(()=>{
+    if(!overlay.classList.contains('active'))return;
+    const el=document.getElementById('tiFeedCVE');if(!el)return;
+    const item=liveCVEs[lci%liveCVEs.length];lci++;
+    const row=renderFeedItem(item,'cve');row.style.opacity='0';row.style.transform='translateX(-8px)';
+    el.insertBefore(row,el.firstChild);
+    setTimeout(()=>{row.style.transition='opacity .4s,transform .4s';row.style.opacity='1';row.style.transform='none';},50);
+    if(el.children.length>6)el.removeChild(el.lastChild);
+  },12000);
+
+  // Donut chart
+  const catC=document.getElementById('tiCatCanvas');
+  if(catC){
+    catC.width=catC.parentElement.offsetWidth||220;catC.height=180;
+    const cctx=catC.getContext('2d');
+    const cats=[{label:'APT',val:28,col:'192,21,42'},{label:'Ransomware',val:24,col:'255,80,50'},{label:'Phishing',val:22,col:'201,168,76'},{label:'Botnet',val:14,col:'0,200,255'},{label:'Insider',val:8,col:'180,80,200'},{label:'Other',val:4,col:'80,80,120'}];
+    let catT=0;
+    function drawDonut(){
+      if(!overlay.classList.contains('active'))return;
+      cctx.clearRect(0,0,catC.width,catC.height);
+      const cx=catC.width*.38,cy=catC.height*.5,R=62,r=40;
+      let startA=-Math.PI/2;const total=cats.reduce((a,c)=>a+c.val,0);
+      cats.forEach((cat,i)=>{
+        const arc=(cat.val/total)*Math.PI*2,pulse=Math.sin(catT*.04+i)*.015,R2=R+pulse*10;
+        cctx.fillStyle=`rgba(${cat.col},.75)`;cctx.shadowColor=`rgb(${cat.col})`;cctx.shadowBlur=6;
+        cctx.beginPath();cctx.moveTo(cx,cy);cctx.arc(cx,cy,R2,startA,startA+arc);cctx.closePath();cctx.fill();cctx.shadowBlur=0;
+        startA+=arc+.02;
+      });
+      cctx.fillStyle='rgba(10,2,6,.97)';cctx.beginPath();cctx.arc(cx,cy,r,0,Math.PI*2);cctx.fill();
+      cctx.font='bold 11px monospace';cctx.fillStyle='rgba(255,255,255,.6)';cctx.textAlign='center';
+      cctx.fillText('THREATS',cx,cy-4);cctx.fillText('ACTIVE',cx,cy+10);cctx.textAlign='left';
+      cats.forEach((cat,i)=>{const lx=catC.width*.72,ly=18+i*26;cctx.fillStyle=`rgba(${cat.col},.8)`;cctx.fillRect(lx,ly,8,8);cctx.font='7px monospace';cctx.fillStyle='rgba(255,255,255,.45)';cctx.fillText(`${cat.label} ${cat.val}%`,lx+12,ly+8);});
+      catT++;requestAnimationFrame(drawDonut);
+    }
+    drawDonut();
+  }
+
+  // Severity list
+  const sevData=[{threat:'BlackCat Ransomware',score:9.6,col:'192,21,42'},{threat:'Ivanti CVE-2025-0282',score:9.0,col:'192,21,42'},{threat:'Cl0p Extortion',score:8.4,col:'255,80,50'},{threat:'IcedID Trojan',score:7.8,col:'255,80,50'},{threat:'Emotet Botnet',score:6.5,col:'201,168,76'},{threat:'LinkedIn Spear-Phish',score:5.9,col:'201,168,76'}];
+  const sl=document.getElementById('tiSevList');
+  if(sl){sl.innerHTML=sevData.map(s=>`<div class="ti-sev-row"><div class="ti-sev-name">${s.threat}</div><div class="ti-sev-bar-wrap"><div class="ti-sev-bar" style="width:${s.score/10*100}%;background:rgba(${s.col},.7);box-shadow:0 0 8px rgba(${s.col},.4);"></div></div><div class="ti-sev-score" style="color:rgba(${s.col},1)">${s.score}</div></div>`).join('');}
+
+  // Industries
+  const industries=[{name:'Finance & Banking',pct:34,col:'192,21,42'},{name:'Healthcare',pct:28,col:'255,80,50'},{name:'Government',pct:22,col:'201,168,76'},{name:'Education',pct:18,col:'0,200,255'},{name:'Critical Infra',pct:15,col:'180,80,200'},{name:'Retail',pct:11,col:'80,160,80'}];
+  const il=document.getElementById('tiIndustryList');
+  if(il){il.innerHTML=industries.map(i=>`<div class="ti-ind-row"><div class="ti-ind-dot" style="background:rgba(${i.col},1);box-shadow:0 0 6px rgba(${i.col},.6);"></div><div class="ti-ind-name">${i.name}</div><div class="ti-ind-bar-wrap"><div class="ti-ind-bar" style="width:${i.pct}%;background:rgba(${i.col},.5);"></div></div><div class="ti-ind-pct" style="color:rgba(${i.col},.9)">${i.pct}%</div></div>`).join('');}
+
+  // IOCs
+  function randHex(n){const h='0123456789abcdef';let s='';for(let i=0;i<n;i++)s+=h[Math.floor(Math.random()*16)];return s;}
+  const iocIPs=['185.220.101.47','91.108.56.211','45.33.219.14','103.79.77.200','193.32.127.86','162.247.74.201','45.142.212.100','198.50.191.95'];
+  const iocDomains=['secure-login-update.ru','microsoft365-verify.top','docusign-alert.net','invoice-download.xyz','auth-reset-portal.cc','update-security-patch.io','cdn-assets-delivery.ru'];
+  const iocHashes=[{hash:randHex(32),type:'MD5',name:'BlackCat.exe'},{hash:randHex(40),type:'SHA1',name:'IcedID_loader.dll'},{hash:randHex(64),type:'SHA256',name:'emotet_epoch5.bin'},{hash:randHex(64),type:'SHA256',name:'cobalt_stager.ps1'},{hash:randHex(32),type:'MD5',name:'lockbit3_ransom.exe'}];
+  const iocURLs=['http://185.220.101.47/gate.php','https://secure-login-update.ru/ms/auth','https://cdn-assets-delivery.ru/payload.zip','http://103.79.77.200/c2/check-in','https://invoice-download.xyz/doc.php?id=9182'];
+
+  const ipEl=document.getElementById('tiIocIPs');
+  if(ipEl){ipEl.innerHTML=iocIPs.map(ip=>`<div class="ioc-row"><span class="ioc-val">${ip}</span><span class="ioc-copy" onclick="copyIOC(this,'${ip}')">&#x2398;</span></div>`).join('');}
+  const domEl=document.getElementById('tiIocDomains');
+  if(domEl){domEl.innerHTML=iocDomains.map(d=>`<div class="ioc-row"><span class="ioc-val">${d}</span><span class="ioc-copy" onclick="copyIOC(this,'${d}')">&#x2398;</span></div>`).join('');}
+  const hashEl=document.getElementById('tiIocHashes');
+  if(hashEl){hashEl.innerHTML=iocHashes.map(h=>`<div class="ioc-row hash-row"><div><span class="ioc-type">${h.type}</span><span class="ioc-name">${h.name}</span></div><span class="ioc-hash">${h.hash.substring(0,18)}&#x2026;</span><span class="ioc-copy" onclick="copyIOC(this,'${h.hash}')">&#x2398;</span></div>`).join('');}
+  const urlEl=document.getElementById('tiIocURLs');
+  if(urlEl){urlEl.innerHTML=iocURLs.map(u=>`<div class="ioc-row"><span class="ioc-val url">${u.substring(0,38)}&#x2026;</span><span class="ioc-copy" onclick="copyIOC(this,'${u}')">&#x2398;</span></div>`).join('');}
+
+  // Attribution groups
+  const groups=[
+    {name:'APT28 (Fancy Bear)',origin:'Russia — GRU',targets:'Gov, Military, NATO',activity:'CRITICAL',campaigns:['Operation RoundPress','HeadLace malware'],col:'192,21,42'},
+    {name:'Lazarus Group',origin:'North Korea — RGB',targets:'Finance, Crypto, Defence',activity:'CRITICAL',campaigns:['TraderTraitor','AppleJeus'],col:'192,21,42'},
+    {name:'APT41 (Winnti)',origin:'China — MSS',targets:'Tech, Healthcare, Telecom',activity:'HIGH',campaigns:['Operation CuckooBees'],col:'255,80,50'},
+    {name:'Sandworm Team',origin:'Russia — GRU Unit 74455',targets:'Critical Infrastructure',activity:'CRITICAL',campaigns:['Industroyer2','CaddyWiper'],col:'192,21,42'},
+    {name:'Scattered Spider',origin:'Western — financially motivated',targets:'Tech, Telecom, BPO',activity:'HIGH',campaigns:['MGM Breach','Oktapus'],col:'255,80,50'},
+    {name:'Kimsuky',origin:'North Korea — RGB',targets:'Think Tanks, Academia',activity:'MEDIUM',campaigns:['GoldDragon','AppleSeed'],col:'201,168,76'},
+  ];
+  const grpEl=document.getElementById('tiGroups');
+  if(grpEl){
+    grpEl.innerHTML='';
+    groups.forEach((g,i)=>{
+      const ac=g.activity==='CRITICAL'?'192,21,42':g.activity==='HIGH'?'255,80,50':'201,168,76';
+      const row=document.createElement('div');row.className='ti-group-row';
+      row.innerHTML=`<div class="ti-grp-header"><div class="ti-grp-left"><div class="ti-grp-dot" style="background:rgba(${g.col},1);box-shadow:0 0 8px rgba(${g.col},.6);"></div><div><div class="ti-grp-name">${g.name}</div><div class="ti-grp-origin">${g.origin}</div></div></div><span class="ti-grp-act" style="color:rgba(${ac},1);border-color:rgba(${ac},.3);background:rgba(${ac},.1)">${g.activity}</span></div><div class="ti-grp-body"><div class="ti-grp-targets"><span class="ti-grp-lbl">TARGETS</span> ${g.targets}</div><div class="ti-grp-camps"><span class="ti-grp-lbl">CAMPAIGNS</span> ${g.campaigns.join(' · ')}</div></div>`;
+      row.style.opacity='0';row.style.transform='translateY(10px)';
+      grpEl.appendChild(row);
+      setTimeout(()=>{row.style.transition='opacity .4s,transform .4s';row.style.opacity='1';row.style.transform='none';},i*100+300);
+    });
+  }
+
+  // Region bar chart
+  const regC=document.getElementById('tiRegionCanvas');
+  if(regC){
+    regC.width=regC.parentElement.offsetWidth||320;regC.height=120;
+    const rctx=regC.getContext('2d');
+    const regions=[{name:'Russia',pct:.88,col:'192,21,42'},{name:'China',pct:.82,col:'255,80,50'},{name:'N.Korea',pct:.71,col:'255,130,30'},{name:'Iran',pct:.64,col:'201,168,76'},{name:'Vietnam',pct:.38,col:'0,200,255'},{name:'Others',pct:.25,col:'80,80,160'}];
+    let rt=0;
+    function drawRegion(){
+      if(!overlay.classList.contains('active'))return;
+      rctx.clearRect(0,0,regC.width,regC.height);
+      const W=regC.width,H=regC.height,bw=(W-20)/(regions.length+.5),gap=4;
+      regions.forEach((r,i)=>{
+        const pulse=Math.sin(rt*.04+i*.8)*.04,bh=(r.pct+pulse)*(H-30),bx=10+i*(bw+gap),by=H-20-bh;
+        rctx.fillStyle=`rgba(${r.col},.12)`;rctx.fillRect(bx,H-20-(H-30),bw,H-30);
+        rctx.fillStyle=`rgba(${r.col},.75)`;rctx.shadowColor=`rgb(${r.col})`;rctx.shadowBlur=6;
+        rctx.fillRect(bx,by,bw,bh);rctx.shadowBlur=0;
+        rctx.font='7px monospace';rctx.fillStyle=`rgba(${r.col},.8)`;rctx.textAlign='center';rctx.fillText(r.name,bx+bw/2,H-6);rctx.textAlign='left';
+        rctx.fillStyle='rgba(255,255,255,.4)';rctx.fillText(Math.round((r.pct+pulse)*100)+'%',bx+bw/2-10,by-4);
+      });
+      rt++;requestAnimationFrame(drawRegion);
+    }
+    drawRegion();
+  }
+}
+
+window.copyIOC=function(el,val){
+  el.textContent='&#x2713;';el.style.color='rgba(0,255,159,.9)';
+  setTimeout(()=>{el.textContent='&#x2398;';el.style.color='';},1500);
+  try{navigator.clipboard.writeText(val);}catch(e){}
+};
 </script>
 </body>
 </html>
